@@ -11,26 +11,23 @@ intents.message_content = True
 intents.members = False
 intents.guild_messages = False
 client = commands.Bot(command_prefix=":3",intents=intents)
-MY_GUILD = discord.Object(id=int(os.getenv('DISCORD_GUILD')))
 ADMIN_IDS = [979210001556070491, 809870005914566676]
 
 NatReactMessage = True
 NatReactEmote = True
 
-class MyClient(Bot):
+guildsopen = []
 
-    def __init__(self):
-        self.MY_GUILD = discord.Object(id=int(os.getenv('DISCORD_GUILD')))
-        super().__init__(intents=discord.Intents.default(),command_prefix="!roll ")
-
-    async def on_ready(self):
-        print("Bot is online!")
-
-    async def setup_hook(self):
-        self.tree.copy_global_to(guild=self.MY_GUILD)
-        await self.tree.sync(guild=self.MY_GUILD)
-
-client = MyClient()
+@client.event
+async def on_ready():
+    print(f'{client.user} has connected to Discord!')
+    try:
+        for v in client.guilds:
+            guildsopen.append(v.name)
+        synced = await client.tree.sync()
+        print(f'synced {len(synced)} command(s)')
+    except Exception as exception:
+        print(exception)
 
 @client.tree.command()
 async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice: int = 1, add: int = None, multiply: int = None):
