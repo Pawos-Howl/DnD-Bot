@@ -10,23 +10,28 @@ intents.message_content = True
 intents.members = False
 intents.guild_messages = False
 client = commands.Bot(command_prefix=":3",intents=intents)
-ADMIN_IDS = [979210001556070491, 809870005914566676]
+ADMIN_IDS = [979210001556070491, 809870005914566676, 675559827425984582]
 
 NatReactMessage = False
 NatReactEmote = False
 
-guildsopen = []
+# why
+#guildsopen = []
 
 @client.event
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
-    try:
-        for v in client.guilds:
-            guildsopen.append(v.name)
-        synced = await client.tree.sync()
-        print(f'synced {len(synced)} command(s)')
-    except Exception as exception:
-        print(exception)
+    #try:
+    for guild in client.guilds:
+
+        #guildsopen.append(v.name)
+        await client.tree.sync(guild=guild)
+        # print(f'synced {len(synced)} command(s)')
+    
+    # Dont do that error handler, or at least make it a specific error
+
+    # except Exception as exception:
+    #     print(exception)
 
 @client.tree.command()
 async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice: int = 1, add: int = None, multiply: int = None):
