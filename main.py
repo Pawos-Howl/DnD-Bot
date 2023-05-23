@@ -1,5 +1,4 @@
 import os, discord, random
-from discord.ext.commands import Bot
 from discord.ext import commands
 from dotenv import load_dotenv
 load_dotenv()
@@ -13,8 +12,8 @@ intents.guild_messages = False
 client = commands.Bot(command_prefix=":3",intents=intents)
 ADMIN_IDS = [979210001556070491, 809870005914566676]
 
-NatReactMessage = True
-NatReactEmote = True
+NatReactMessage = False
+NatReactEmote = False
 
 guildsopen = []
 
@@ -32,10 +31,10 @@ async def on_ready():
 @client.tree.command()
 async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice: int = 1, add: int = None, multiply: int = None):
     # a natural 1, ouch man...(doggy); bad luck?(doggy); lets hope for a better roll next time.(doggy); yay, a nat 1 /j(doggy); Gotta wish you were a halfling(james); 
-    nat1_reactList = ["A natural 1, ouch man...","Bad luck?","Lets hope for a better roll next time.","yay, a nat 1 /j","Gotta wish you werer a halfling."]
-    nat1_reactAuth = ["Samaris","Samaris","Samaris","Samaris","James"]
-    nat20_reactList = ["..."]
-    nat20_reactAuth = ["..."]
+    # nat1_reactList = ["A natural 1, ouch man...","Bad luck?","Lets hope for a better roll next time.","yay, a nat 1 /j","Gotta wish you werer a halfling."]
+    # nat1_reactAuth = ["Samaris","Samaris","Samaris","Samaris","James"]
+    # nat20_reactList = ["..."]
+    # nat20_reactAuth = ["..."]
 
     amount_of_dice = number_of_dice
     dice_add = add
@@ -67,29 +66,28 @@ async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice
     msg =  f'The result is {dice_sum}\n{appendRoll}'
     # Post work for if the result was either nat20/20 or nat1
     # Use this! https://www.w3schools.com/python/python_strings_format.asp
-    if NatReactMessage and len(dice_rolls) == 1:
-        rollReact = ''
-        if dice_rolls[0] == 1:
-            #This is a nat1
-            natReaction = nat1_reactList[random.randint(0, len(nat1_reactList-1))]
-            natReactionAuthor = nat1_reactAuth[nat1_reactList.index(natReaction)]
-            rollReact = f'\n{natReaction} - {natReactionAuthor}'
-        if dice_rolls[0] == 20 and dice_sides == 20:
-            #This is a nat20/20
-            natReaction = nat20_reactList[random.randint(0, len(nat20_reactList-1))]
-            natReactionAuthor = nat20_reactAuth[nat20_reactList.index(natReaction)]
-            rollReact = f'\n{natReaction} - {natReactionAuthor}'
-        msg = msg + rollReact
-    interactionMessage = await interaction.response.send_message(msg)
-    if NatReactEmote and len(dice_rolls) == 1:
-        if dice_rolls[0] == 1:
-            #This is a nat 1
-            await interactionMessage.add_reaction('1108177315663466586')
-        if dice_rolls[0] == 20 and dice_sides == 20:
-            #This is a nat20/20
-            await interactionMessage.add_reaction('1108177315663466586')
-
-
+    # if NatReactMessage and len(dice_rolls) == 1:
+    #     rollReact = ''
+    #     if dice_rolls[0] == 1:
+    #         #This is a nat1
+    #         natReaction = nat1_reactList[random.randint(0, len(nat1_reactList-1))]
+    #         natReactionAuthor = nat1_reactAuth[nat1_reactList.index(natReaction)]
+    #         rollReact = f'\n{natReaction} - {natReactionAuthor}'
+    #     if dice_rolls[0] == 20 and dice_sides == 20:
+    #         #This is a nat20/20
+    #         natReaction = nat20_reactList[random.randint(0, len(nat20_reactList-1))]
+    #         natReactionAuthor = nat20_reactAuth[nat20_reactList.index(natReaction)]
+    #         rollReact = f'\n{natReaction} - {natReactionAuthor}'
+    #     msg = msg + rollReact
+    # interactionMessage = await interaction.response.send_message(msg)
+    # if NatReactEmote and len(dice_rolls) == 1:
+    #     if dice_rolls[0] == 1:
+    #         #This is a nat 1
+    #         await interactionMessage.add_reaction('1108177281249189938')
+    #     if dice_rolls[0] == 20 and dice_sides == 20:
+    #         #This is a nat20/20
+    #         await interactionMessage.add_reaction('1108177315663466586')
+    await interaction.response.send_message(msg)
 
 @client.tree.command()
 async def stopbot(interaction: discord.Interaction):
