@@ -38,7 +38,6 @@ async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice
     appendRoll = ''
     if dice_add != None: appendRoll += f'Added:{dice_add}; '
     if dice_multiply != None: appendRoll += f'Multiplied:{dice_multiply}; '
-    print("add/multiplied")
     if len(dice_rolls) == 1: appendRoll += f'Roll:{dice_rolls[0]}'
     if len(dice_rolls) >= 2: 
         rollsAppend = ''
