@@ -42,12 +42,6 @@ async def roll(interaction: discord.Interaction, dice_sides: int, reason: str = 
         randomNumber = random.randint(1, dice_sides)
         dice_rolls.append(randomNumber)
         dice_sum += randomNumber
-    
-    #REMOVE THIS ITS RIGGING!
-    dice_sum = 1
-    dice_rolls = [1]
-    print("THIS RESULT IS RIGGED")
-    appendRoll += "THIS WAS A RIGGED RESULT; "
 
     if add != None: dice_sum += add
     if multiply != None: dice_sum = int(dice_sum)*int(multiply)
