@@ -20,28 +20,25 @@ class MyClient(Bot):
 
 client = MyClient()
 
-def mainRoll(diceSides, numberOfDice, add, multiply):
-    sidesOfDice = diceSides
-    amount_of_dice = numberOfDice
-    dice_add = add
-    dice_multiply = multiply
+
+@client.tree.command()
+async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice: int = 1, dice_add: int = None, dice_multiply: int = None):
     dice_sum = 0
     dice_rolls = []
 
     # "Rolls" the dice
-    for i in range(amount_of_dice):
-        randomNumber = random.randint(1, sidesOfDice)
+    for i in range(number_of_dice):
+        randomNumber = random.randint(1, dice_sides)
         dice_rolls.append(randomNumber)
         dice_sum += randomNumber
 
-    if add != None: dice_sum += add
-    if multiply != None: dice_sum = int(dice_sum)*int(multiply)
+    if dice_add != None: dice_sum += dice_add
+    if dice_multiply != None: dice_sum = int(dice_sum)*int(dice_multiply)
 
-    # Gives a "nice" looking output
-    if len(dice_rolls) == 1 and dice_multiply == None and dice_add == None: return f'The random number is {dice_sum}'
     appendRoll = ''
     if dice_add != None: appendRoll += f'Added:{dice_add}; '
     if dice_multiply != None: appendRoll += f'Multiplied:{dice_multiply}; '
+    print("add/multiplied")
     if len(dice_rolls) == 1: appendRoll += f'Roll:{dice_rolls[0]}'
     if len(dice_rolls) >= 2: 
         rollsAppend = ''
@@ -49,13 +46,9 @@ def mainRoll(diceSides, numberOfDice, add, multiply):
             rollsAppend += f'{dice_rolls[i]}, '
         rollsAppend += f'{dice_rolls[i+1]}'
         appendRoll += f'Rolls:{rollsAppend}'
-    return f'The result is {dice_sum}\n{appendRoll}'
-
-@client.tree.command()
-async def roll(interaction: discord.Interaction, dice_sides: int, number_of_dice: int = 1, add: int = None, multiply: int = None):
-    msg = mainRoll(dice_sides, number_of_dice, add, multiply)
+    
+    msg = f'The result is {dice_sum}\n{appendRoll}'
     await interaction.response.send_message(msg)
-
 
 # @client.tree.command()
 # async def legacyroll(interaction: discord.Interaction, number: int, add: int = None):
