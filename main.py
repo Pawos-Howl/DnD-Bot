@@ -24,6 +24,11 @@ async def on_ready():
     
 @client.tree.command()
 async def roll(interaction: discord.Interaction, dice_sides: int, reason: str = None, number_of_dice: int = 1, add: int = None, multiply: int = None):
+    # Backup to end the interaction early if there is an input on dice of an invalid amount
+    if dice_sides <= 0:
+        embed = discord.Embed(title='ERROR', description=f'{interaction.user}! You can\'t run the "roll" command with a roll of: {dice_sides}!\nIt must be a positive integer', color=0xff00c8)
+        await interaction.response.send_message(embed=embed, ephemeral=False)
+        return # Does nothing other then end the function
     # a natural 1, ouch man...(doggy); bad luck?(doggy); lets hope for a better roll next time.(doggy); yay, a nat 1 /j(doggy); Gotta wish you were a halfling(james); 
     nat1_reactList = ["A natural 1, ouch man...","Bad luck?","Lets hope for a better roll next time.","yay, a nat 1 /j","Gotta wish you werer a halfling."]
     nat1_reactAuth = ["Samaris","Samaris","Samaris","Samaris","James"]
