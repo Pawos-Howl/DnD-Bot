@@ -1,4 +1,4 @@
-import os, discord, random
+import os, discord, random, json
 from discord.ext import commands
 from dotenv import load_dotenv
 load_dotenv()
@@ -100,4 +100,325 @@ async def stopbot(interaction: discord.Interaction):
         embed = discord.Embed(title='ERROR', description=f'{interaction.user}! You are not allowed to run the `stopbot` command! That command is for admin use only.\n>:c You are not allowed to do that!', color=0xff00c8)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
+# THE FOLLOWING IS CODE FROM "TheProperGlitch". The URL is here: https://github.com/TheProperGlitch/Dnd-Tracker
+
+#Setup:
+try:
+    os.chdir("Users")
+except FileNotFoundError:
+    #This doesn't matter :3
+    os.mkdir("Users")
+    os.chdir("Users")
+files = os.listdir('.')
+#This is here to remove the file added to github by the repo
+try:
+    files.remove("null..txt")
+except ValueError:
+    #The file it can't find isn't needed, so its fine :3
+    pass
+
+#Showing all creatures:
+@client.tree.command()
+async def c_show(interaction: discord.Interaction):
+    user = interaction.user.id
+    if f"{user}.json" in files:
+        with open(f"{user}.json", "r") as file:
+            user_objects = json.load(file)
+        if user_objects["creature_amount"] == 0:
+            msg = "Sorry, but it seems that you have no creatures to look at."
+            await interaction.response.send_message(msg, ephemeral=True)
+        else:
+            creature_amount = user_objects["creature_amount"]
+            creature_list = user_objects["creature_list"]
+            final_list = ''
+            for i in range(creature_amount):
+                final_list = final_list + f"{i+1}: Name:{creature_list[str(i+1)][0]}, Health:{creature_list[str(i+1)][1]}, Dex Modifier:{creature_list[str(i+1)][2]} \n Notes:{creature_list[str(i+1)][3]}; "
+            interaction.response.send_message(final_list)
+
+#Editting a creature:
+@client.tree.command()
+async def c_edit(interaction: discord.Interaction, creature_number: int, name: str = None, health: int = None, dexterity: int = None, notes: str = None):
+    """
+    Allows the user to edit a creature's attributes.
+    """
+    # Function code goes here
+    user = interaction.user.id
+    if f"{user}.json" in files:
+        with open(f"{user}.json", "r") as file:
+            user_objects = json.load(file)
+        if user_objects["creature_amount"] == 0:
+            msg = "Sorry, but it seems that you have no creatures to look at."
+            interaction.response.send_message(msg, ephemeral=True)
+        else:
+            print("What creature would you like to edit?")
+            creature_list = user_objects["creature_list"]
+            editing = creature_number
+            if name != None:
+                creature_list[str(editing)][0] = name
+            if health != None:
+                creature_list[str(editing)][1] = health
+            if dexterity != None:
+                creature_list[str(editing)][2] = dexterity
+            if notes != None:
+                creature_list[str(editing)][3] = notes
+            setName = f"Name: {creature_list[str(editing)][0]}"
+            setHealth = f"Health: {creature_list[str(editing)][1]}"
+            setDext = f"Dexterity: {creature_list[str(editing)][2]}"
+            setNotes = f"Notes: {creature_list[str(editing)][3]}"
+            user_objects["creature_list"] = creature_list
+            with open(f"{user}.json", "w") as file:
+                json.dump(user_objects, file)
+            msg = f'Done! Creature {creature_number}\'s data is below:\n{setName}\n{setHealth}\n{setDext}\n{setNotes}'
+            interaction.response.send_message(msg, ephemeral=True)
+
+    else:
+        msg = "Sorry, but it seems that you have no creatures to look at."
+        interaction.response.send_message(msg, ephemeral=True)
+
+#Making a new creature:
+@client.tree.command()
+async def c_make(interaction: discord.Interaction, name: str, health: int, dexterity: int, notes: str = ""):
+    """
+    Prompts the user to create a new creature and saves it.
+    """
+    # Function code goes here
+    creature = []
+    creature_list = {}
+    creature.append(name)
+    creature.append(int(health))
+    creature.append(int(dexterity))
+    creature.append(notes)
+    user = interaction.user.id
+    if f"{user}.json" in files:
+        with open(user+".json", "r") as file:
+            user_objects = json.load(file)
+        creature_amount = user_objects["creature_amount"]
+        creature_amount += 1
+        creature_list = user_objects["creature_list"]
+        creature_list[creature_amount] = creature
+        user_objects["creature_list"] = creature_list
+        user_objects["creature_amount"] = creature_amount
+        with open(f"{user}.json", "w") as file:
+            json.dump(user_objects, file)
+    else:
+        creature_list = {1: creature}
+        user_objects = {"creature_amount" : 1, "creature_list" : creature_list, "encounter_amount" : 0, "encounter_list" : {}}
+        with open(f"{user}.json", "w") as file:
+            json.dump(user_objects, file)
+    msg = 'Done!'
+    interaction.response.send_message(msg, ephemeral=True)
+
+#Copying a creature that has already been made
+@client.tree.command()
+async def c_copy(interaction: discord.Interaction, creature_id: int):
+    user = interaction.user.id
+    if f"{user}.json" in files:
+        with open(f"{user}.json", "r") as file:
+            user_objects = json.load(file)
+        if user_objects["creature_amount"] == 0:
+            msg = "Sorry, but it seems that you have no creatures to copy."
+            interaction.response.send_message(msg, ephemeral=True)
+        else:
+            creature_amount = user_objects["creature_amount"]
+            creature_list = user_objects["creature_list"]
+
+            copying = creature_id
+            creature = creature_list[str(copying)]
+            creature_amount+=1
+            creature_list[creature_amount] = creature
+            user_objects["creature_amount"] = creature_amount
+            user_objects["creature_list"] = creature_list
+            with open(f"{user}.json", "w") as file:
+                json.dump(user_objects, file)
+            msg = "Done!"
+            interaction.response.send_message(msg, ephemeral=True)
+
+    else:
+        msg = "Sorry, but it seems that you have no creatures to copy."
+        interaction.response.send_message(msg, ephemeral=True)
+
+#Showing all encounters
+@client.tree.command()
+async def e_show(interaction: discord.Interaction):
+    user = interaction.user.id
+    if f"{user}.json" in files:
+        with open(f"{user}.json", "r") as file:
+            user_objects = json.load(file)
+        encounter_list = user_objects["encounter_list"]
+        encounter_amount = user_objects["encounter_amount"]
+        if encounter_amount == 0:
+            msg = "Sorry, but we could not find any encounters in your file. \nTry making an encounter."
+            interaction.response.send_message(msg, ephemeral=True)
+        else:
+            encountersList = ""
+            for object in encountersList:
+                encountersList = encountersList + f"{str(object)}: {encounter_list[object]}; "
+            msg = f'{encountersList}'
+            interaction.response.send_message(msg, ephemeral=True)
+
+#Copying an encounter that has already been made
+@client.tree.command()
+async def e_copy(interaction: discord.Interaction):
+    """NO CODE"""
+    msg = 'Oops... We don\'t have code for this yet! Visit this command soon!'
+    interaction.response.send_message(msg, ephemeral=True)
+#Editing an encounter that has already been made
+@client.tree.command()
+async def e_edit(interaction: discord.Interaction):
+    """NO CODE"""
+    msg = 'Oops... We don\'t have code for this yet! Visit this command soon!'
+    interaction.response.send_message(msg, ephemeral=True)
+
+#TEMP DISCLAIMER
+@client.tree.command()
+async def notice(interaction: discord.Interaction):
+    embed = discord.Embed(title='NOTEBOARD', description='S-So... its a bit difficult to make something to run encounters... It might take a long time... Go to TheProperGlitch\'s DnD thing for now (attached below). It works very well. Give me a bit to get the code working on other stuff :3 -Pawos Howl', color=0x2528D2, url="https://github.com/TheProperGlitch/Dnd-Tracker")
+    interaction.response.send_message(embed=embed, ephemeral=True)
+
+# #Making an encounter
+# def e_make():
+#     """
+#     Allows the user to create an encounter. (Q for quick make, D for detailed.) Note: Quick made encounters will not be saved.
+#     """
+#     # Function code goes here
+#     print("Would you like to quick-make an encounter or be more detailed? (Q for quick make, D for detailed.) \nNote: Quick made encounters will not be saved.")
+#     encounter_type = input("")
+#     if encounter_type.lower() == "q":
+#         print("How many creatures are there?")
+#         amount_of_creatures=int(input(""))
+#         turn = 0
+#         initiative_tracking = {}
+#         while turn < amount_of_creatures:
+#             print("What is the creatures name?")
+#             name = input('')
+#             print("What is the creatures initiative? (Numbers only!)")
+#             initiative = int(input(''))
+#             while initiative in initiative_tracking:
+#                 print("I'm sorry, but two creatures cannot have the same initiative.\nWhat should the new initiative be?")
+#                 initiative = int(input(''))
+#             print("What is the creatures health? (Numbers only!)")
+#             health = input('')
+#             print("What other notes do you have?")
+#             notes = input('')
+#             creature = [name, initiative, health, notes]
+#             if health == "":
+#                 health = 1
+#             initiative_tracking[initiative] = [creature]
+#             turn += 1
+#         playing = True
+#         while playing:
+#             for key in sorted (initiative_tracking.keys(), reverse=True):
+#                 if playing == False:
+#                     break
+#                 active = True
+#                 while active:
+#                     print(f"It is {initiative_tracking[key][0][0]}'s turn! \nWhat would you like to do? \nCommands:(H: Heal Self, D: Damage, N: Next, E: End)")
+#                     action = input("")
+#                     if action.lower() == "h":
+#                         print(f"{initiative_tracking[key][0][0]} is at {initiative_tracking[key][0][2]} health.")
+#                         print("For how much would you like heal for? (Integers only!)")
+#                         health_healed = int(input(""))
+#                         initiative_tracking[key][0][2] = str(health_healed + int(initiative_tracking[key][0][2]))
+#                         print(f"{initiative_tracking[key][0][0]} is now at {initiative_tracking[key][0][2]} health.")
+#                     elif action.lower() == "d":
+#                         print(f"{initiative_tracking[key][0][0]} is at {initiative_tracking[key][0][2]} health.")
+#                         print("For how much damage would you like to do? (Integers only!)")
+#                         damage_dealt = int(input(""))
+#                         initiative_tracking[key][0][2] = str(int(initiative_tracking[key][0][2]) - damage_dealt)
+#                         print(f"{initiative_tracking[key][0][0]} is now at {initiative_tracking[key][0][2]} health.")
+#                     elif action.lower() == "n": 
+#                         active = False
+#                     elif action.lower() == "e":
+#                         playing = False
+#                         active = False
+#     else:
+#         if f"{user}.json" in files:
+#             with open(f"{user}.json", "r") as file:
+#                 user_objects = json.load(file)
+#             creature_list = user_objects["creature_list"]
+#             creature_amount = user_objects["creature_amount"]
+#             encounter_list = user_objects["encounter_list"]
+#             encounter_amount = user_objects["encounter_amount"]
+#             non_added_list = creature_list.copy()
+#             encounter = []
+#             while True:
+#                 print(f"Creatures added: {encounter}")
+#                 print("Which creature would you like to add to the encounter? Integer only!")
+#                 print("0: End")
+#                 for creature_key in non_added_list:
+#                     creature = non_added_list[creature_key]
+#                     print(f"{creature_key}: Name: {creature[0]}, Health: {creature[1]}, Initiative: {creature[2]}, Notes: {creature[3]}")
+#                 chosen = int(input())
+#                 if chosen == 0:
+#                     print("Done")
+#                     break
+#                 encounter.append(non_added_list[str(chosen)]) 
+#                 non_added_list.pop(str(chosen))
+#                 if len(non_added_list) == 0:
+#                     print("All creatures added!")
+#                     break
+#             encounter_amount += 1
+#             encounter_list[encounter_amount] = encounter
+#             user_objects["encounter_amount"] = encounter_amount
+#             user_objects["encounter_list"] = encounter_list
+#             with open(f"{user}.json", "w") as file:
+#                 json.dump(user_objects, file)
+#         else:
+#             print("Sorry, but it seems you have no creatures, please make some and then try again.")
+
+# #Using a made encounter
+# def e_use():
+#     if f"{user}.json" in files:
+#         with open(f"{user}.json", "r") as file:
+#             user_objects = json.load(file)
+#         encounter_list = user_objects["encounter_list"]
+#         encounter_amount = user_objects["encounter_amount"]
+#         if encounter_amount == 0:
+#             print("Sorry, but we could not find any encounters in your file. \nTry making an encounter.")
+#         else:
+#             print("Which encounter would you like to use:")
+#             for object in encounter_list:
+#                 print(f"{str(object)}: {encounter_list[object]}")
+#             encounter_choice = input("")
+#             encounter = encounter_list[encounter_choice]
+#             initiative_tracking = {}
+#             for creature in encounter:
+#                 name = creature[0]
+#                 initiative = random.randint(1,20) + creature[1]
+#                 while initiative in initiative_tracking:
+#                     initiative = random.randint(1,20) + creature[1]
+#                 health = creature[2]
+#                 notes = creature[3]
+#                 initiative_tracking[initiative] = [creature]
+
+#             playing = True
+#             while playing:
+#                 for key in sorted(initiative_tracking.keys(), reverse=True):
+#                     if playing == False:
+#                         break
+#                     active = True
+#                     while active:
+#                         print(f"It is {initiative_tracking[key][0][0]}'s turn! \nWhat would you like to do? \nCommands:(H: Heal Self, D: Damage, N: Next, E: End)")
+#                         action = input("")
+#                         if action.lower() == "h":
+#                             print(f"{initiative_tracking[key][0][0]} is at {initiative_tracking[key][0][2]} health.")
+#                             print("For how much would you like heal for? (Integers only!)")
+#                             health_healed = int(input(""))
+#                             initiative_tracking[key][0][2] = str(health_healed + int(initiative_tracking[key][0][2]))
+#                             print(f"{initiative_tracking[key][0][0]} is now at {initiative_tracking[key][0][2]} health.")
+#                         elif action.lower() == "d":
+#                             print(f"{initiative_tracking[key][0][0]} is at {initiative_tracking[key][0][2]} health.")
+#                             print("For how much damage would you like to do? (Integers only!)")
+#                             damage_dealt = int(input(""))
+#                             initiative_tracking[key][0][2] = str(int(initiative_tracking[key][0][2]) - damage_dealt)
+#                             print(f"{initiative_tracking[key][0][0]} is now at {initiative_tracking[key][0][2]} health.")
+#                         elif action.lower() == "n":
+#                             active = False
+#                         elif action.lower() == "e":
+#                             playing = False
+#                             active = False
+#     else:
+#         print("Sorry, but we could not find a file with your name. \nTry making a creature.")
+
+# LEAVE AT BOTTOM
 client.run(TOKEN)
