@@ -20,6 +20,7 @@ async def on_ready():
     print(f'{client.user} has connected to Discord!')
     for guild in client.guilds:
         client.tree.copy_global_to(guild=guild)
+        #Add selective cog removal for specific servers
         await client.tree.sync(guild=guild)
 
 @client.tree.command()
