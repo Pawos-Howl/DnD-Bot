@@ -9,8 +9,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = False
 intents.guild_messages = False
-client = commands.Bot(command_prefix=":3",intents=intents)
-ADMIN_IDS = [979210001556070491, 809870005914566676, 675559827425984582]
+client = commands.Bot(command_prefix="!DnD ",intents=intents)
+ADMIN_IDS = [979210001556070491, 1111396560371204186] #Pawos Howl ID, DnD Bot ID
 
 NatReactMessage = True
 NatReactEmote = True
@@ -21,14 +21,9 @@ async def on_ready():
     for guild in client.guilds:
         client.tree.copy_global_to(guild=guild)
         await client.tree.sync(guild=guild)
-    
+
 @client.tree.command()
 async def roll(interaction: discord.Interaction, dice_sides: int, reason: str = None, number_of_dice: int = 1, add: int = None, multiply: int = None):
-    # Backup to end the interaction early if there is an input on dice of an invalid amount
-    if dice_sides <= 0:
-        embed = discord.Embed(title='ERROR', description=f'{interaction.user}! You can\'t run the "roll" command with a roll of: {dice_sides}!\nIt must be a positive integer', color=0xff00c8)
-        await interaction.response.send_message(embed=embed, ephemeral=False)
-        return # Does nothing other then end the function
     # a natural 1, ouch man...(doggy); bad luck?(doggy); lets hope for a better roll next time.(doggy); yay, a nat 1 /j(doggy); Gotta wish you were a halfling(james); 
     nat1_reactList = ["A natural 1, ouch man...","Bad luck?","Lets hope for a better roll next time.","yay, a nat 1 /j","Gotta wish you werer a halfling."]
     nat1_reactAuth = ["Samaris","Samaris","Samaris","Samaris","James"]
@@ -41,6 +36,19 @@ async def roll(interaction: discord.Interaction, dice_sides: int, reason: str = 
     dice_sum = 0
     dice_rolls = []
     appendRoll = ''
+    warning_alert = ''
+
+    # Finds the "0" error
+    if dice_sides == 0:
+        # This is where errors happen :3
+        warning_alert = warning_alert + 'WARN: INPUT OF "0" DETECTED. DEFAULTING TO "20"\n'
+        dice_sides = 20
+
+    # Backup to end the interaction early if there is an input on dice of an invalid amount
+    if dice_sides <= 0:
+        embed = discord.Embed(title='ERROR', description=f'{interaction.user}! You can\'t run the "roll" command with a roll of: {dice_sides}!\nIt must be a positive integer', color=0xff00c8)
+        await interaction.response.send_message(embed=embed, ephemeral=False)
+        return # Does nothing other then end the function
 
     # "Rolls" the dice
     for i in range(amount_of_dice):
@@ -62,7 +70,8 @@ async def roll(interaction: discord.Interaction, dice_sides: int, reason: str = 
             rollsAppend += f'{dice_rolls[i]}, '
         rollsAppend += f'{dice_rolls[i+1]}'
         appendRoll += f'Rolls:{rollsAppend}'
-    msg =  f'The result is {dice_sum}\n{appendRoll}'
+    msg =  f'{warning_alert}The result is {dice_sum}\n{appendRoll}'
+
     # Post work for if the result was either nat20/20 or nat1
     if NatReactMessage and len(dice_rolls) == 1:
         rollReact = ''
@@ -88,6 +97,11 @@ async def roll(interaction: discord.Interaction, dice_sides: int, reason: str = 
         if dice_rolls[0] == 20 and dice_sides == 20:
             #This is a nat20/20
             await message.add_reaction("<:nat20:1108177315663466586>")
+
+@client.tree.command()
+async def botuse(interaction: discord.Interaction):
+    embed = discord.Embed(title='Bot Use', description=f'This bot is a small discord bot coded by Pawos Howl. A major section of code came from TheProperGlitch\'s "Dnd-Tracker" so a lot of thanks there. The commands to use start with a "/" so have fun!')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @client.tree.command()
 async def stopbot(interaction: discord.Interaction):
@@ -256,24 +270,46 @@ async def e_show(interaction: discord.Interaction):
             msg = f'{encountersList}'
             interaction.response.send_message(msg, ephemeral=True)
 
-#Copying an encounter that has already been made
-@client.tree.command()
-async def e_copy(interaction: discord.Interaction):
-    """NO CODE"""
-    msg = 'Oops... We don\'t have code for this yet! Visit this command soon!'
-    interaction.response.send_message(msg, ephemeral=True)
-#Editing an encounter that has already been made
-@client.tree.command()
-async def e_edit(interaction: discord.Interaction):
-    """NO CODE"""
-    msg = 'Oops... We don\'t have code for this yet! Visit this command soon!'
-    interaction.response.send_message(msg, ephemeral=True)
+# #Copying an encounter that has already been made
+# @client.tree.command()
+# async def e_copy(interaction: discord.Interaction):
+#     """NO CODE"""
+#     msg = 'Oops... We don\'t have code for this yet! Visit this command soon!'
+#     interaction.response.send_message(msg, ephemeral=True)
+# #Editing an encounter that has already been made
+# @client.tree.command()
+# async def e_edit(interaction: discord.Interaction):
+#     """NO CODE"""
+#     msg = 'Oops... We don\'t have code for this yet! Visit this command soon!'
+#     interaction.response.send_message(msg, ephemeral=True)
 
 #TEMP DISCLAIMER
 @client.tree.command()
 async def notice(interaction: discord.Interaction):
     embed = discord.Embed(title='NOTEBOARD', description='S-So... its a bit difficult to make something to run encounters... It might take a long time... Go to TheProperGlitch\'s DnD thing for now (attached below). It works very well. Give me a bit to get the code working on other stuff :3 -Pawos Howl', color=0x2528D2, url="https://github.com/TheProperGlitch/Dnd-Tracker")
     interaction.response.send_message(embed=embed, ephemeral=True)
+
+#My Code. Finally!
+# @client.event()
+# async def encounter(self,ctx):
+#     pass
+
+def activeEncounters(state, encounter):
+    if state == "add":
+        pass #Add encounter to list
+    if state == "read":
+        pass #Read if an encounter is on a list
+    if state == "remove":
+        pass #Remoce from list
+
+#Still my code, just runs the encounter
+def encounterRun(input, value):
+    if input == "attack":
+        #attack
+        pass
+    if input == "defend":
+        #defend
+        pass
 
 # #Making an encounter
 # def e_make():
@@ -390,7 +426,7 @@ async def notice(interaction: discord.Interaction):
 #                 health = creature[2]
 #                 notes = creature[3]
 #                 initiative_tracking[initiative] = [creature]
-
+#
 #             playing = True
 #             while playing:
 #                 for key in sorted(initiative_tracking.keys(), reverse=True):
